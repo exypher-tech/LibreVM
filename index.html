@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LibreSync</title>
+
+<style>
+:root {
+  --bg: #0f0f14;
+  --panel: #171723;
+  --panel-light: #1f1f2e;
+  --accent: #7c3aed;
+  --accent-glow: rgba(124,58,237,0.7);
+  --text-muted: #9ca3af;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(circle at top, #1a1a2e 0%, #0f0f14 60%);
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 2rem;
+}
+
+.logo-row img {
+  width: 44px;
+  height: 44px;
+  /* force the icon to match the accent color #7c3aed */
+  filter: invert(33%) sepia(88%) saturate(2600%) hue-rotate(246deg) brightness(100%) contrast(100%) drop-shadow(0 0 10px var(--accent-glow)) drop-shadow(0 0 20px var(--accent-glow));
+}
+
+.logo-text {
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
+}
+
+.card {
+  background: var(--panel);
+  padding: 2rem;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card h2 {
+  margin: 0;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 1rem;
+  text-align: center;
+}
+
+input {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #2a2a3a;
+  background: var(--panel-light);
+  color: white;
+  text-align: center;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+button {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px var(--accent-glow);
+}
+
+.session-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 9999;
+  display: none;
+}
+
+.session-fullscreen iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="homeView">
+  <div class="logo-row">
+    <img src="icon.svg" alt="LibreSync Icon">
+    <div class="logo-text">LibreSync</div>
+  </div>
+
+  <div class="card">
+    <h2>Secure Session Access</h2>
+    <input type="text" id="sessionId" placeholder="Enter Session ID or encoded IP">
+    <button onclick="connectSession()">Connect to Session</button>
+  </div>
+</div>
+
+<div class="session-fullscreen" id="sessionView"></div>
+
+<script>
+// Encode IP: multiply each octet by 2 and join with "A"
+function encodeIP(ip) {
+  return ip.split('.').map(n => Number(n)*2).join('A');
+}
+
+// Decode IP: split by letters and divide each number by 2
+function decodeIP(encoded) {
+  const nums = encoded.split(/[A-Z]/);
+  return nums.map(n => Number(n)/2).join('.');
+}
+
+function connectSession() {
+  const sessionInput = document.getElementById('sessionId').value.trim();
+  if (!sessionInput) {
+    alert("Please enter a session ID!");
+    return;
+  }
+
+  let host;
+  try { host = decodeIP(sessionInput); }
+  catch(e) { host = sessionInput; }
+
+  document.getElementById("homeView").style.opacity = "0";
+  document.getElementById("homeView").style.transform = "scale(0.95)";
+  setTimeout(() => { document.getElementById("homeView").style.display = "none"; }, 300);
+
+  document.body.style.overflow = "hidden";
+
+  const sessionView = document.getElementById("sessionView");
+  sessionView.style.display = "block";
+
+  // inject noVNC iframe
+  sessionView.innerHTML = `<iframe src="noVNC/vnc.html?host=${host}&port=6080&path=websockify"></iframe>`;
+
+  if (sessionView.requestFullscreen) sessionView.requestFullscreen().catch(() => {});
+}
+</script>
+
+</body>
+</html>
