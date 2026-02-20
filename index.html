@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LibreSync</title>
+<title>Libresync</title>
 
 <style>
 :root {
@@ -45,7 +45,6 @@ body {
 .logo-row img {
   width: 44px;
   height: 44px;
-  /* force the icon to match the accent color #7c3aed */
   filter: invert(33%) sepia(88%) saturate(2600%) hue-rotate(246deg) brightness(100%) contrast(100%) drop-shadow(0 0 10px var(--accent-glow)) drop-shadow(0 0 20px var(--accent-glow));
 }
 
@@ -144,12 +143,10 @@ button:hover {
 <div class="session-fullscreen" id="sessionView"></div>
 
 <script>
-// Encode IP: multiply each octet by 2 and join with "A"
 function encodeIP(ip) {
   return ip.split('.').map(n => Number(n)*2).join('A');
 }
 
-// Decode IP: split by letters and divide each number by 2
 function decodeIP(encoded) {
   const nums = encoded.split(/[A-Z]/);
   return nums.map(n => Number(n)/2).join('.');
